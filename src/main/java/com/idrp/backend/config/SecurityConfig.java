@@ -36,7 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
 
                         // Public POST form submission APIs
-                        .requestMatchers(HttpMethod.POST, "/api/contact").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/contacts").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/event-registrations").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/program-applications").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/startup-applications").permitAll()

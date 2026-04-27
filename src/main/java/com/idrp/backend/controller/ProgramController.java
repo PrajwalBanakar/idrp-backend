@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,6 +20,7 @@ public class ProgramController {
 
     private final ProgramService programService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse<ProgramResponseDto>> createProgram(
             @Valid @RequestBody ProgramRequestDto requestDto
@@ -64,6 +66,7 @@ public class ProgramController {
         );
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ProgramResponseDto>> updateProgram(
             @PathVariable Long id,
@@ -80,6 +83,7 @@ public class ProgramController {
         );
     }
 
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteProgram(@PathVariable Long id) {
         programService.deleteProgram(id);

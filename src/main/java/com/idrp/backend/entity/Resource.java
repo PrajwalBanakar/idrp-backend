@@ -55,6 +55,12 @@ public class Resource {
     @Builder.Default
     private Integer displayOrder = 0;
 
+    @Column(name = "created_by", length = 150)
+    private String createdBy;
+
+    @Column(name = "updated_by", length = 150)
+    private String updatedBy;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

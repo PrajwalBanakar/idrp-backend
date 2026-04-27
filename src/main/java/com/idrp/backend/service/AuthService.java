@@ -9,4 +9,8 @@ public interface AuthService {
     AuthResponseDto createAdmin(CreateAdminRequestDto requestDto);
 
     AuthResponseDto login(AdminLoginRequestDto requestDto);
+
+    AuthResponseDto refreshAccessToken(String refreshToken);
+
+    void logout(String refreshToken);
 }

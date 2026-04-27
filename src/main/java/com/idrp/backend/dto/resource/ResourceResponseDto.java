@@ -27,4 +27,6 @@ public class ResourceResponseDto {
     private Boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String createdBy;
+private String updatedBy;
 }

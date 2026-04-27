@@ -15,6 +15,6 @@ public class AdminLoginRequestDto {
     @Email(message = "Enter a valid email")
     private String email;
 
-    @NotBlank(message = "Password is required")
+    @NotBlank(message = "Password is required") 
     private String password;
 }

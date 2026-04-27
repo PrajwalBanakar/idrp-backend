@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,6 +20,7 @@ public class ContactController {
 
     private final ContactService contactService;
 
+    // Public form submission
     @PostMapping
     public ResponseEntity<ApiResponse<ContactResponseDto>> createContact(
             @Valid @RequestBody ContactRequestDto requestDto
@@ -35,6 +37,8 @@ public class ContactController {
         );
     }
 
+    // Admin access
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @GetMapping
     public ResponseEntity<ApiResponse<Page<ContactResponseDto>>> getAllContacts(
             @RequestParam(defaultValue = "0") int page,
@@ -51,6 +55,7 @@ public class ContactController {
         );
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ContactResponseDto>> getContactById(@PathVariable Long id) {
         ContactResponseDto contact = contactService.getContactById(id);
@@ -64,6 +69,7 @@ public class ContactController {
         );
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ContactResponseDto>> updateContact(
             @PathVariable Long id,
@@ -80,6 +86,7 @@ public class ContactController {
         );
     }
 
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteContact(@PathVariable Long id) {
         contactService.deleteContact(id);

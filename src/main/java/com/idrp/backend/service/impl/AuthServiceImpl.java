@@ -5,11 +5,13 @@ import com.idrp.backend.dto.auth.AuthResponseDto;
 import com.idrp.backend.dto.auth.CreateAdminRequestDto;
 import com.idrp.backend.entity.Admin;
 import com.idrp.backend.entity.AdminRole;
+import com.idrp.backend.entity.RefreshToken;
 import com.idrp.backend.exception.DuplicateResourceException;
 import com.idrp.backend.exception.ResourceNotFoundException;
 import com.idrp.backend.repository.AdminRepository;
 import com.idrp.backend.service.AuthService;
 import com.idrp.backend.service.JwtService;
+import com.idrp.backend.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,6 +26,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final RefreshTokenService refreshTokenService;
 
     @Override
     public AuthResponseDto createAdmin(CreateAdminRequestDto requestDto) {
@@ -41,19 +44,16 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         Admin savedAdmin = adminRepository.save(admin);
-        String token = jwtService.generateToken(savedAdmin);
 
-        return AuthResponseDto.builder()
-                .adminId(savedAdmin.getId())
-                .name(savedAdmin.getName())
-                .email(savedAdmin.getEmail())
-                .role(savedAdmin.getRole())
-                .token(token)
-                .build();
+        String accessToken = jwtService.generateToken(savedAdmin);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(savedAdmin);
+
+        return buildAuthResponse(savedAdmin, accessToken, refreshToken.getToken());
     }
 
     @Override
     public AuthResponseDto login(AdminLoginRequestDto requestDto) {
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         requestDto.getEmail(),
@@ -64,14 +64,37 @@ public class AuthServiceImpl implements AuthService {
         Admin admin = adminRepository.findByEmail(requestDto.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with email: " + requestDto.getEmail()));
 
-        String token = jwtService.generateToken(admin);
+        String accessToken = jwtService.generateToken(admin);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(admin);
 
+        return buildAuthResponse(admin, accessToken, refreshToken.getToken());
+    }
+
+    @Override
+    public AuthResponseDto refreshAccessToken(String refreshTokenValue) {
+
+        RefreshToken refreshToken = refreshTokenService.validateRefreshToken(refreshTokenValue);
+
+        Admin admin = refreshToken.getAdmin();
+        String newAccessToken = jwtService.generateToken(admin);
+
+        return buildAuthResponse(admin, newAccessToken, refreshToken.getToken());
+    }
+
+    @Override
+    public void logout(String refreshToken) {
+        refreshTokenService.revokeRefreshToken(refreshToken);
+    }
+
+    private AuthResponseDto buildAuthResponse(Admin admin, String accessToken, String refreshToken) {
         return AuthResponseDto.builder()
                 .adminId(admin.getId())
                 .name(admin.getName())
                 .email(admin.getEmail())
                 .role(admin.getRole())
-                .token(token)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .tokenType("Bearer")
                 .build();
     }
 }

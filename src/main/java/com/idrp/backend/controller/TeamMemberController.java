@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,6 +20,7 @@ public class TeamMemberController {
 
     private final TeamMemberService teamMemberService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse<TeamMemberResponseDto>> createTeamMember(
             @Valid @RequestBody TeamMemberRequestDto requestDto
@@ -64,6 +66,7 @@ public class TeamMemberController {
         );
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<TeamMemberResponseDto>> updateTeamMember(
             @PathVariable Long id,
@@ -80,6 +83,7 @@ public class TeamMemberController {
         );
     }
 
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteTeamMember(@PathVariable Long id) {
         teamMemberService.deleteTeamMember(id);

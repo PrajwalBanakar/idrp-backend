@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -36,6 +37,7 @@ public class CourseRegistrationController {
         );
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @GetMapping
     public ResponseEntity<ApiResponse<Page<CourseRegistrationResponseDto>>> getAllCourseRegistrations(
             @RequestParam(defaultValue = "0") int page,
@@ -53,6 +55,7 @@ public class CourseRegistrationController {
         );
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CourseRegistrationResponseDto>> getCourseRegistrationById(
             @PathVariable Long id
@@ -69,6 +72,7 @@ public class CourseRegistrationController {
         );
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CourseRegistrationResponseDto>> updateCourseRegistration(
             @PathVariable Long id,
@@ -86,6 +90,7 @@ public class CourseRegistrationController {
         );
     }
 
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteCourseRegistration(@PathVariable Long id) {
         courseRegistrationService.deleteCourseRegistration(id);

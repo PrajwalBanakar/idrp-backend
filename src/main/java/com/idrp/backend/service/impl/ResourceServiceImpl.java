@@ -9,6 +9,7 @@ import com.idrp.backend.repository.ResourceRepository;
 import com.idrp.backend.service.ResourceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,6 +17,10 @@ import org.springframework.stereotype.Service;
 public class ResourceServiceImpl implements ResourceService {
 
     private final ResourceRepository resourceRepository;
+
+    private String getCurrentUser() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
 
     @Override
     public ResourceResponseDto createResource(ResourceRequestDto requestDto) {
@@ -25,6 +30,11 @@ public class ResourceServiceImpl implements ResourceService {
         }
 
         Resource resource = mapToEntity(requestDto);
+
+        // 🔥 AUDIT
+        resource.setCreatedBy(getCurrentUser());
+        resource.setUpdatedBy(getCurrentUser());
+
         Resource savedResource = resourceRepository.save(resource);
 
         return mapToResponseDto(savedResource);
@@ -35,8 +45,10 @@ public class ResourceServiceImpl implements ResourceService {
         Pageable pageable = PageRequest.of(
                 page,
                 size,
-                Sort.by(Sort.Order.asc("displayOrder"), Sort.Order.desc("publishDate"), Sort.Order.desc("createdAt"))
-        );
+                Sort.by(
+                        Sort.Order.asc("displayOrder"),
+                        Sort.Order.desc("publishDate"),
+                        Sort.Order.desc("createdAt")));
 
         return resourceRepository.findAll(pageable)
                 .map(this::mapToResponseDto);
@@ -69,12 +81,16 @@ public class ResourceServiceImpl implements ResourceService {
         existingResource.setCoverImageUrl(requestDto.getCoverImageUrl());
         existingResource.setPublishDate(requestDto.getPublishDate());
         existingResource.setAuthor(requestDto.getAuthor());
+
         existingResource.setDisplayOrder(
-                requestDto.getDisplayOrder() != null ? requestDto.getDisplayOrder() : existingResource.getDisplayOrder()
-        );
+                requestDto.getDisplayOrder() != null ? requestDto.getDisplayOrder()
+                        : existingResource.getDisplayOrder());
+
         existingResource.setActive(
-                requestDto.getActive() != null ? requestDto.getActive() : existingResource.getActive()
-        );
+                requestDto.getActive() != null ? requestDto.getActive() : existingResource.getActive());
+
+        // 🔥 AUDIT
+        existingResource.setUpdatedBy(getCurrentUser());
 
         Resource updatedResource = resourceRepository.save(existingResource);
 
@@ -121,6 +137,8 @@ public class ResourceServiceImpl implements ResourceService {
                 .active(resource.getActive())
                 .createdAt(resource.getCreatedAt())
                 .updatedAt(resource.getUpdatedAt())
+                .createdBy(resource.getCreatedBy())
+                .updatedBy(resource.getUpdatedBy())
                 .build();
     }
 }
